@@ -74,6 +74,20 @@ def test_transfer_success(balance: int, transfer_money: int, expected: int) -> N
 
 
 @pytest.mark.parametrize(
+    "balance, deposit_money",
+    [
+        (1500, 1000),
+    ],
+)
+def test_deposit_success_stdout_patch(balance: int, deposit_money: int) -> None:
+    account = Account(balance)
+    with patch("sys.stdout", new=io.StringIO()) as fake_out:
+        account.deposit(deposit_money)
+        output = fake_out.getvalue()
+    assert "입금이 되었습니다. 입금 후 잔액은 2500원 입니다.\n" == output
+
+
+@pytest.mark.parametrize(
     "balance, transfer_money",
     [
         (1500, 1000),
