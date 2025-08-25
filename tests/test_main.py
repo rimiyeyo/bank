@@ -15,7 +15,9 @@ from main import Account
 )
 def test_deposit_negative_or_zero_raises(balance: int, deposit_money: int) -> None:
     account = Account(balance)
-    with pytest.raises(AssertionError, match="입금액은 0원이상 입금할 수 있습니다."):
+    with pytest.raises(
+        AssertionError, match="입금액은 1원 이상부터 입금할 수 있습니다."
+    ):
         account.deposit(deposit_money)
 
 
@@ -29,7 +31,7 @@ def test_deposit_negative_or_zero_raises(balance: int, deposit_money: int) -> No
 def test_transfer_negative_or_zero_raises(balance: int, transfer_money: int) -> None:
     account = Account(balance)
     with pytest.raises(
-        AssertionError, match="출금액은 0원 초과 금액부터 출금할 수 있습니다."
+        AssertionError, match="출금액은 1원 이상부터 출금할 수 있습니다."
     ):
         account.transfer(transfer_money)
 
@@ -56,7 +58,7 @@ def test_transfer_raises_value_error(balance: int, transfer_money: int) -> None:
 )
 def test_balance_zero_raise(balance: int, transfer_money: int) -> None:
     account = Account(balance)
-    with pytest.raises(AssertionError, match="계좌에 잔액이 0원미만 입니다."):
+    with pytest.raises(AssertionError, match="계좌에 잔액이 0원이하 입니다."):
         account.transfer(transfer_money)
 
 
@@ -74,28 +76,34 @@ def test_transfer_success(balance: int, transfer_money: int, expected: int) -> N
 
 
 @pytest.mark.parametrize(
-    "balance, deposit_money",
+    "balance, deposit_money, expected",
     [
-        (1500, 1000),
+        (1500, 1000, 2500),
     ],
 )
-def test_deposit_success_stdout_patch(balance: int, deposit_money: int) -> None:
+def test_deposit_success_stdout_patch(
+    balance: int, deposit_money: int, expected: int
+) -> None:
     account = Account(balance)
     with patch("sys.stdout", new=io.StringIO()) as fake_out:
         account.deposit(deposit_money)
         output = fake_out.getvalue()
-    assert "입금이 되었습니다. 입금 후 잔액은 2500원 입니다.\n" == output
+    assert f"입금이 되었습니다. 입금 후 잔액은 {expected}원 입니다.\n" == output
 
 
 @pytest.mark.parametrize(
-    "balance, transfer_money",
+    "balance, transfer_money, expected",
     [
-        (1500, 1000),
+        (1500, 1000, 500),
     ],
 )
-def test_transfer_success_stdout_patch(balance: int, transfer_money: int) -> None:
+def test_transfer_success_stdout_patch(
+    balance: int, transfer_money: int, expected: int
+) -> None:
     account = Account(balance)
     with patch("sys.stdout", new=io.StringIO()) as fake_out:
         account.transfer(transfer_money)
         output = fake_out.getvalue()
-    assert "계좌에서 돈이 출금되었습니다. 출금 후 잔액은 500원 입니다.\n" == output
+    assert (
+        f"계좌에서 돈이 출금되었습니다. 출금 후 잔액은 {expected}원 입니다.\n" == output
+    )
